@@ -16,6 +16,9 @@ open class XAxisRendererRadarChart: XAxisRenderer
 {
     @objc open weak var chart: RadarChartView?
     
+    /// seperate text color for each of radar chart's x labels
+    @objc var customTextColors : [UIColor] = []
+    
     @objc public init(viewPortHandler: ViewPortHandler, xAxis: XAxis?, chart: RadarChartView)
     {
         super.init(viewPortHandler: viewPortHandler, xAxis: xAxis, transformer: nil)
@@ -56,11 +59,14 @@ open class XAxisRendererRadarChart: XAxisRenderer
             
             let p = center.moving(distance: CGFloat(chart.yRange) * factor + xAxis.labelRotatedWidth / 2.0, atAngle: angle)
             
+            // if customTextColors got as much colors as the number of labels to draw, then use custom color, if not then use default label text color
+            let drawTextColor = i < customTextColors.count ? customTextColors[i] : labelTextColor
+            
             drawLabel(context: context,
                       formattedLabel: label,
                       x: p.x,
                       y: p.y - xAxis.labelRotatedHeight / 2.0,
-                      attributes: [NSAttributedString.Key.font: labelFont, NSAttributedString.Key.foregroundColor: labelTextColor],
+                      attributes: [NSAttributedString.Key.font: labelFont, NSAttributedString.Key.foregroundColor: drawTextColor],
                       anchor: drawLabelAnchor,
                       angleRadians: labelRotationAngleRadians)
         }
