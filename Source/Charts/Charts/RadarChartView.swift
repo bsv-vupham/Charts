@@ -225,4 +225,10 @@ open class RadarChartView: PieRadarChartViewBase
             _xAxisRenderer.customTextColors = self.customTextColors
         }
     }
+    
+    @objc open var customLabelPositionBlock : ((String, CGFloat, CGFloat)->CGPoint)? {
+        didSet {
+            _xAxisRenderer.customLabelPositionBlock = self.customLabelPositionBlock
+        }
+    }
 }

@@ -19,6 +19,8 @@ open class XAxisRendererRadarChart: XAxisRenderer
     /// seperate text color for each of radar chart's x labels
     @objc var customTextColors : [UIColor] = []
     
+    @objc var customLabelPositionBlock : ((String, CGFloat, CGFloat)->CGPoint)?
+    
     @objc public init(viewPortHandler: ViewPortHandler, xAxis: XAxis?, chart: RadarChartView)
     {
         super.init(viewPortHandler: viewPortHandler, xAxis: xAxis, transformer: nil)
@@ -81,10 +83,18 @@ open class XAxisRendererRadarChart: XAxisRenderer
         anchor: CGPoint,
         angleRadians: CGFloat)
     {
+        var newX = x
+        var newY = y
+        if let block = customLabelPositionBlock {
+            let newPoint = block(formattedLabel, x, y)
+            newX = newPoint.x
+            newY = newPoint.y
+        }
+        
         ChartUtils.drawText(
             context: context,
             text: formattedLabel,
-            point: CGPoint(x: x, y: y),
+            point: CGPoint(x: newX, y: newY),
             attributes: attributes,
             anchor: anchor,
             angleRadians: angleRadians)
