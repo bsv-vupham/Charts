@@ -39,4 +39,19 @@ public protocol IBarChartDataSet: IBarLineScatterCandleBubbleChartDataSet
     
     /// array of labels used to describe the different values of the stacked bars
     var stackLabels: [String] { get set }
+    
+    /// corner radius for bar
+    var barCornerRadius : CGFloat { get set }
+    
+    /// corner for bar
+    var barMaskedCorners: UIRectCorner { get set }
+    
+    /// gradient colors for bar
+    var barGradientColors : [NSUIColor] { get set }
+    
+    /// gradient start point colors for bar
+    var barGradientStartPoint : CGPoint { get set }
+    
+    /// gradient end point colors for bar
+    var barGradientEndPoint : CGPoint { get set }
 }

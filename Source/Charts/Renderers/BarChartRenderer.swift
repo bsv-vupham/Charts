@@ -334,6 +334,7 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
 
         let borderWidth = dataSet.barBorderWidth
         let borderColor = dataSet.barBorderColor
+        let borderCornerRadius = dataSet.barCornerRadius
         let drawBorder = borderWidth > 0.0
         
         context.saveGState()
@@ -406,7 +407,7 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
         {
             context.setFillColor(dataSet.color(atIndex: 0).cgColor)
         }
-
+        
         // In case the chart is stacked, we need to accomodate individual bars within accessibilityOrdereredElements
         let isStacked = dataSet.isStacked
         let stackSize = isStacked ? dataSet.stackSize : 1
@@ -431,7 +432,32 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 context.setFillColor(dataSet.color(atIndex: j).cgColor)
             }
             
-            context.fill(barRect)
+            if dataSet.barGradientColors.count > 1, let startColor = dataSet.barGradientColors.first, let endColor = dataSet.barGradientColors.last {
+                let colors = [startColor.cgColor, endColor.cgColor]
+                let colorSpace = CGColorSpaceCreateDeviceRGB()
+                let colorLocations: [CGFloat] = [0.0, 1.0]
+                if let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: colorLocations) {
+                    //context.saveGState()
+                    let startPoint = CGPoint.zero
+                    let endPoint = CGPoint(x: 0, y: barRect.size.height)
+                    context.addRect(barRect)
+                    context.clip()
+                    context.drawLinearGradient(gradient, start: startPoint, end: endPoint, options: [])
+                    //context.restoreGState()
+                }
+            }
+            
+            if borderCornerRadius > 0 {
+                var path = UIBezierPath(roundedRect: barRect, cornerRadius: borderCornerRadius).cgPath
+                if !dataSet.barMaskedCorners.isEmpty {
+                    path = UIBezierPath(roundedRect: barRect, byRoundingCorners: dataSet.barMaskedCorners, cornerRadii: CGSize(width: borderCornerRadius, height: borderCornerRadius)).cgPath
+                }
+                context.addPath(path)
+                context.closePath()
+                context.fillPath()
+            } else {
+                context.fill(barRect)
+            }
             
             if drawBorder
             {
@@ -439,7 +465,7 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 context.setLineWidth(borderWidth)
                 context.stroke(barRect)
             }
-
+            
             // Create and append the corresponding accessibility element to accessibilityOrderedElements
             if let chart = dataProvider as? BarChartView
             {
