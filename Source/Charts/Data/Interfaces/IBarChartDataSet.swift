@@ -46,12 +46,13 @@ public protocol IBarChartDataSet: IBarLineScatterCandleBubbleChartDataSet
     /// corner for bar
     var barMaskedCorners: UIRectCorner { get set }
     
-    /// gradient colors for bar
-    var barGradientColors : [NSUIColor] { get set }
+    /// array of gradient colors [[color1, color2], [color3, color4]]
+    var barGradientColors: [[NSUIColor]]? { get set }
     
-    /// gradient start point colors for bar
-    var barGradientStartPoint : CGPoint { get set }
+    var barGradientOrientation: BarGradientOrientation { get set }
     
-    /// gradient end point colors for bar
-    var barGradientEndPoint : CGPoint { get set }
+    /// - returns: The gradient colors at the given index of the DataSet's gradient color array.
+    /// This prevents out-of-bounds by performing a modulus on the gradient color index, so colours will repeat themselves.
+    func barGradientColor(at index: Int) -> [NSUIColor]?
 }
+
