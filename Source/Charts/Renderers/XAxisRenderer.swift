@@ -212,6 +212,10 @@ open class XAxisRenderer: AxisRendererBase
                 position.x = CGFloat(entries[i])
             }
             
+            if let x = xAxis.valueFormatter?.positionXFor?(xAxis.entries[i], axis: xAxis)?.doubleValue {
+                position.x = CGFloat(x)
+            }
+            
             position.y = 0.0
             position = position.applying(valueToPixelMatrix)
             

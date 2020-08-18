@@ -142,4 +142,39 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
         notifyDataChanged()
     }
     
+    @objc open func customIntervalGroupBars(interval : [Double])
+    {
+        let setCount = _dataSets.count
+        if setCount <= 1
+        {
+            print("BarData needs to hold at least 2 BarDataSets to allow grouping.", terminator: "\n")
+            return
+        }
+
+        let max = maxEntryCountSet
+        let maxEntryCount = max?.entryCount ?? 0
+
+        let groupWidth = self.barWidth * Double(setCount * 2 - 1)
+        
+        var fromX = interval.first ?? 0
+
+        for i in stride(from: 0, to: maxEntryCount, by: 1)
+        {
+            for (index, set) in _dataSets.enumerated() {
+                if i < set.entryCount
+                {
+                    if let entry = set.entryForIndex(i)
+                    {
+                        entry.x = fromX + Double(index * 2) * barWidth
+                    }
+                }
+            }
+            
+            let nextInterval = i + 1 < maxEntryCount ? interval[i + 1] : 0.0
+            fromX += groupWidth + nextInterval
+        }
+
+        notifyDataChanged()
+    }
+    
 }
