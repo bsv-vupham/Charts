@@ -104,4 +104,42 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
         return Double(_dataSets.count) * (self.barWidth + barSpace) + groupSpace
     }
     
+    @objc open func createEqualGroupBars(maximumAxis : Double = 2.0)
+    {
+        let setCount = _dataSets.count
+        if setCount <= 1
+        {
+            print("BarData needs to hold at least 2 BarDataSets to allow grouping.", terminator: "\n")
+            return
+        }
+
+        let max = maxEntryCountSet
+        let maxEntryCount = max?.entryCount ?? 0
+
+        let groupWidth = self.barWidth * Double(setCount * 2 - 1)
+        
+        
+        let interval = (maximumAxis - groupWidth * Double(maxEntryCount)) / Double(maxEntryCount + 1)
+        
+        var fromX = interval
+
+        for i in stride(from: 0, to: maxEntryCount, by: 1)
+        {
+            for (index, set) in _dataSets.enumerated() {
+                if i < set.entryCount
+                {
+                    if let entry = set.entryForIndex(i)
+                    {
+                        entry.x = fromX + Double(index * 2) * barWidth
+                        print("Test : \(entry.x)")
+                    }
+                }
+            }
+            
+            fromX += groupWidth + interval
+        }
+
+        notifyDataChanged()
+    }
+    
 }
