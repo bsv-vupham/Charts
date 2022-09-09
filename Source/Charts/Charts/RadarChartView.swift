@@ -217,4 +217,17 @@ open class RadarChartView: PieRadarChartViewBase
     
     /// The range of y-values this chart can display.
     @objc open var yRange: Double { return _yAxis.axisRange }
+    
+    /// Seperate text color for each of radar chart's x labels
+    @objc open var customTextColors : [UIColor] = [] {
+        didSet {
+            _xAxisRenderer.customTextColors = self.customTextColors
+        }
+    }
+    
+    @objc open var customLabelPositionBlock : ((String, CGFloat, CGFloat)->CGPoint)? {
+        didSet {
+            _xAxisRenderer.customLabelPositionBlock = self.customLabelPositionBlock
+        }
+    }
 }

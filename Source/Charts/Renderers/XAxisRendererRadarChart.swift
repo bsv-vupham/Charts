@@ -15,6 +15,11 @@ import CoreGraphics
 open class XAxisRendererRadarChart: XAxisRenderer
 {
     @objc open weak var chart: RadarChartView?
+
+    /// seperate text color for each of radar chart's x labels
+    @objc var customTextColors : [UIColor] = []
+    
+    @objc var customLabelPositionBlock : ((String, CGFloat, CGFloat)->CGPoint)?
     
     @objc public init(viewPortHandler: ViewPortHandler, axis: XAxis, chart: RadarChartView)
     {
@@ -47,13 +52,17 @@ open class XAxisRendererRadarChart: XAxisRenderer
         {
             let label = axis.valueFormatter?.stringForValue(Double(i), axis: axis) ?? ""
             let angle = (sliceangle * CGFloat(i) + chart.rotationAngle).truncatingRemainder(dividingBy: 360.0)
+            
             let p = center.moving(distance: CGFloat(chart.yRange) * factor + axis.labelRotatedWidth / 2.0, atAngle: angle)
-
+            
+            // if customTextColors got as much colors as the number of labels to draw, then use custom color, if not then use default label text color
+            let drawTextColor = i < customTextColors.count ? customTextColors[i] : labelTextColor
+            
             drawLabel(context: context,
                       formattedLabel: label,
                       x: p.x,
                       y: p.y - axis.labelRotatedHeight / 2.0,
-                      attributes: [.font: labelFont, .foregroundColor: labelTextColor],
+                      attributes: [NSAttributedString.Key.font: labelFont, NSAttributedString.Key.foregroundColor: drawTextColor],
                       anchor: drawLabelAnchor,
                       angleRadians: labelRotationAngleRadians)
         }
@@ -68,8 +77,16 @@ open class XAxisRendererRadarChart: XAxisRenderer
         anchor: CGPoint,
         angleRadians: CGFloat)
     {
+        var newX = x
+        var newY = y
+        if let block = customLabelPositionBlock {
+            let newPoint = block(formattedLabel, x, y)
+            newX = newPoint.x
+            newY = newPoint.y
+        }
+        
         context.drawText(formattedLabel,
-                         at: CGPoint(x: x, y: y),
+                         at: CGPoint(x: newX, y: newY),
                          anchor: anchor,
                          angleRadians: angleRadians,
                          attributes: attributes)

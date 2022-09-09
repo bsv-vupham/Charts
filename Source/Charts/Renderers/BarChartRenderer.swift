@@ -379,7 +379,8 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 context.setFillColor(dataSet.color(atIndex: j).cgColor)
             }
             
-            context.fill(barRect)
+            // Credit to https://github.com/alekzuz/Charts/tree/bar-gradient for gradient codes
+            drawBar(context: context, dataSet: dataSet, index: j, barRect: barRect)
             
             if drawBorder
             {
@@ -387,7 +388,7 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 context.setLineWidth(borderWidth)
                 context.stroke(barRect)
             }
-
+            
             // Create and append the corresponding accessibility element to accessibilityOrderedElements
             if let chart = dataProvider as? BarChartView
             {
@@ -404,6 +405,68 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
                 accessibilityOrderedElements[j/stackSize].append(element)
             }
         }
+    }
+    
+    open func drawBar(context: CGContext, dataSet: BarChartDataSetProtocol, index: Int, barRect: CGRect)
+    {
+        context.saveGState()
+        defer { context.restoreGState() }
+        var path : CGPath? = nil
+        if dataSet.barCornerRadius > 0 {
+            path = UIBezierPath(roundedRect: barRect, cornerRadius: dataSet.barCornerRadius).cgPath
+            if !dataSet.barMaskedCorners.isEmpty {
+                path = UIBezierPath(roundedRect: barRect, byRoundingCorners: dataSet.barMaskedCorners, cornerRadii: CGSize(width: dataSet.barCornerRadius, height: dataSet.barCornerRadius)).cgPath
+            }
+            
+        }
+        
+        if let gradientColor = dataSet.barGradientColor(at: index)
+        {
+            drawGradient(context: context, barRect: barRect, customPath: path, gradientColors: gradientColor, orientation: dataSet.barGradientOrientation)
+        }
+        else
+        {
+            // Set the color for the currently drawn value. If the index is out of bounds, reuse colors.
+            let fillColor = dataSet.color(atIndex: index).cgColor
+            context.setFillColor(fillColor)
+            
+            if let path = path {
+                context.addPath(path)
+                context.closePath()
+                context.fillPath()
+            } else {
+                context.fill(barRect)
+            }
+        }
+    }
+    
+    open func drawGradient(context: CGContext, barRect: CGRect = .zero, customPath : CGPath? = nil, gradientColors: Array<NSUIColor>, orientation: BarGradientOrientation)
+    {
+        let cgColors = gradientColors.map{ $0.cgColor } as CFArray
+        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: cgColors, locations: nil)
+
+        let startPoint: CGPoint
+        let endPoint: CGPoint
+        
+        switch orientation
+        {
+        case .vertical:
+            startPoint = CGPoint(x: barRect.midX, y: barRect.maxY)
+            endPoint = CGPoint(x: barRect.midX, y: barRect.minY)
+            
+        case .horizontal:
+            startPoint = CGPoint(x: barRect.minX, y: barRect.midY)
+            endPoint = CGPoint(x: barRect.maxX, y: barRect.midY)
+        }
+        
+        var path = CGPath(rect: barRect, transform: nil)
+        if let customPath = customPath {
+            path = customPath
+        }
+        
+        context.addPath(path)
+        context.clip()
+        context.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: [])
     }
     
     open func prepareBarHighlight(

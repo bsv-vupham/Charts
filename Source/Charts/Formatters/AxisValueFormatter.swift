@@ -27,4 +27,6 @@ public protocol AxisValueFormatter: AnyObject
     func stringForValue(_ value: Double,
                         axis: AxisBase?) -> String
     
+    @objc optional func positionXFor(_ value: Double, axis: AxisBase?) -> NSNumber?
 }
+

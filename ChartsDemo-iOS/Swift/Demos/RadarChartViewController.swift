@@ -16,6 +16,7 @@ class RadarChartViewController: DemoBaseViewController {
     @IBOutlet var chartView: RadarChartView!
     
     let activities = ["Burger", "Steak", "Salad", "Pasta", "Pizza"]
+    
     var originalBarBgColor: UIColor!
     var originalBarTintColor: UIColor!
     var originalBarStyle: UIBarStyle!
@@ -47,6 +48,8 @@ class RadarChartViewController: DemoBaseViewController {
         chartView.webColor = .lightGray
         chartView.innerWebColor = .lightGray
         chartView.webAlpha = 1
+        chartView.customTextColors = [.red, .green, .blue, .yellow, .orange]
+        chartView.customLabelPositionBlock = self.modifyLabelPosition
         
         let marker = RadarMarkerView.viewFromXib()!
         marker.chartView = chartView
@@ -150,6 +153,31 @@ class RadarChartViewController: DemoBaseViewController {
         data.setValueTextColor(.white)
         
         chartView.data = data
+    }
+    
+    func modifyLabelPosition(value : String, x : CGFloat, y : CGFloat)-> CGPoint {
+        var point = CGPoint(x: x, y: y)
+        guard let index = activities.firstIndex(of: value) else {return point}
+        switch index {
+        case 0:
+            point.y = point.y + 10
+            break
+        case 1:
+            point.x = point.x + 10
+            point.y = point.y + 10
+            break
+        case 2:
+            point.x = point.x + 10
+            point.y = point.y - 5
+            break
+        case 4:
+            point.x = point.x - 10
+            point.y = point.y - 5
+            break
+        default:
+            break
+        }
+        return point
     }
     
     override func optionTapped(_ option: Option) {
