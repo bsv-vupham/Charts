@@ -278,8 +278,17 @@ open class XAxisRenderer: NSObject, AxisRenderer
 
             guard viewPortHandler.isInBoundsX(position.x) else { continue }
             
+
             let label = axis.valueFormatter?.stringForValue(axis.entries[i], axis: axis) ?? ""
             let labelns = label as NSString
+
+            if let x = axis.valueFormatter?.positionXFor?(axis.entries[i], axis: axis)?.doubleValue {
+                position.x = CGFloat(x)
+            }
+            
+            position.y = 0.0
+            position = position.applying(valueToPixelMatrix)
+
             
             if axis.isAvoidFirstLastClippingEnabled
             {

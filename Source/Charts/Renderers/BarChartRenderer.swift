@@ -407,7 +407,7 @@ open class BarChartRenderer: BarLineScatterCandleBubbleRenderer
         }
     }
     
-    open func drawBar(context: CGContext, dataSet: IBarChartDataSet, index: Int, barRect: CGRect)
+    open func drawBar(context: CGContext, dataSet: BarChartDataSetProtocol, index: Int, barRect: CGRect)
     {
         context.saveGState()
         defer { context.restoreGState() }
