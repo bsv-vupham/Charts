@@ -14,16 +14,21 @@ import CoreGraphics
 
 open class BarChartData: BarLineScatterCandleBubbleChartData
 {
-    public override init()
+    public required init()
     {
         super.init()
     }
     
-    public override init(dataSets: [IChartDataSet]?)
+    public override init(dataSets: [ChartDataSetProtocol])
     {
         super.init(dataSets: dataSets)
     }
-    
+
+    public required init(arrayLiteral elements: ChartDataSetProtocol...)
+    {
+        super.init(dataSets: elements)
+    }
+
     /// The width of the bars on the x-axis, in values (not pixels)
     ///
     /// **default**: 0.85
@@ -39,13 +44,11 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
     ///   - barSpace: The space between individual bars in values (not pixels) e.g. 0.1f for bar width 1f
     @objc open func groupBars(fromX: Double, groupSpace: Double, barSpace: Double)
     {
-        let setCount = _dataSets.count
-        if setCount <= 1
-        {
+        guard !isEmpty else {
             print("BarData needs to hold at least 2 BarDataSets to allow grouping.", terminator: "\n")
             return
         }
-        
+
         let max = maxEntryCountSet
         let maxEntryCount = max?.entryCount ?? 0
         
@@ -57,12 +60,12 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
         
         let interval = groupWidth(groupSpace: groupSpace, barSpace: barSpace)
 
-        for i in stride(from: 0, to: maxEntryCount, by: 1)
+        for i in 0..<maxEntryCount
         {
             let start = fromX
             fromX += groupSpaceWidthHalf
             
-            (_dataSets as? [IBarChartDataSet])?.forEach { set in
+            (_dataSets as! [BarChartDataSetProtocol]).forEach { set in
                 fromX += barSpaceHalf
                 fromX += barWidthHalf
                 
@@ -88,7 +91,6 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
             {
                 fromX += diff
             }
-
         }
         
         notifyDataChanged()
@@ -101,80 +103,6 @@ open class BarChartData: BarLineScatterCandleBubbleChartData
     ///   - barSpace:
     @objc open func groupWidth(groupSpace: Double, barSpace: Double) -> Double
     {
-        return Double(_dataSets.count) * (self.barWidth + barSpace) + groupSpace
+        return Double(count) * (self.barWidth + barSpace) + groupSpace
     }
-    
-    @objc open func createEqualGroupBars(maximumAxis : Double = 2.0)
-    {
-        let setCount = _dataSets.count
-        if setCount <= 1
-        {
-            print("BarData needs to hold at least 2 BarDataSets to allow grouping.", terminator: "\n")
-            return
-        }
-
-        let max = maxEntryCountSet
-        let maxEntryCount = max?.entryCount ?? 0
-
-        let groupWidth = self.barWidth * Double(setCount * 2 - 1)
-        
-        
-        let interval = (maximumAxis - groupWidth * Double(maxEntryCount)) / Double(maxEntryCount + 1)
-        
-        var fromX = interval
-
-        for i in stride(from: 0, to: maxEntryCount, by: 1)
-        {
-            for (index, set) in _dataSets.enumerated() {
-                if i < set.entryCount
-                {
-                    if let entry = set.entryForIndex(i)
-                    {
-                        entry.x = fromX + Double(index * 2) * barWidth
-                        print("Test : \(entry.x)")
-                    }
-                }
-            }
-            
-            fromX += groupWidth + interval
-        }
-
-        notifyDataChanged()
-    }
-    
-    @objc open func customIntervalGroupBars(interval : [Double])
-    {
-        let setCount = _dataSets.count
-        if setCount <= 1
-        {
-            print("BarData needs to hold at least 2 BarDataSets to allow grouping.", terminator: "\n")
-            return
-        }
-
-        let max = maxEntryCountSet
-        let maxEntryCount = max?.entryCount ?? 0
-
-        let groupWidth = self.barWidth * Double(setCount * 2 - 1)
-        
-        var fromX = interval.first ?? 0
-
-        for i in stride(from: 0, to: maxEntryCount, by: 1)
-        {
-            for (index, set) in _dataSets.enumerated() {
-                if i < set.entryCount
-                {
-                    if let entry = set.entryForIndex(i)
-                    {
-                        entry.x = fromX + Double(index * 2) * barWidth
-                    }
-                }
-            }
-            
-            let nextInterval = i + 1 < maxEntryCount ? interval[i + 1] : 0.0
-            fromX += groupWidth + nextInterval
-        }
-
-        notifyDataChanged()
-    }
-    
 }
